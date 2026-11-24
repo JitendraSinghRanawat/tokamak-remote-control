@@ -1,77 +1,25 @@
+
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#111412">
+  <meta name="theme-color" content="#111512">
   <title>TOKAMAK | Lab Systems</title>
   <script src="https://unpkg.com/mqtt@5.16.0/dist/mqtt.min.js"></script>
   <style>
-    :root{
-      color-scheme:light;
-      --ink:#171b19;--muted:#7b8580;--paper:#f4f6f4;--white:#fff;--line:#e5eae6;
-      --dark:#111512;--dark2:#191f1b;--dark3:#242c26;--mint:#a8d8bf;--mint-strong:#3e8761;
-      --mint-bg:#eaf5ee;--amber:#a97727;--amber-bg:#fbf3e5;--red:#b94a4a;--red-bg:#faeded;
-      --shadow:0 12px 34px rgba(22,34,26,.055);--radius:18px;
-    }
-    *{box-sizing:border-box}
-    html,body{margin:0;min-height:100%;background:var(--paper);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    button,input{font:inherit}button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.45}
-    .app{min-height:100vh;display:grid;grid-template-columns:252px minmax(0,1fr)}
-    .sidebar{background:var(--dark);color:#eff4f0;padding:25px 17px 18px;display:flex;flex-direction:column;min-height:100vh;position:sticky;top:0;height:100vh}
-    .brand{display:flex;align-items:center;gap:12px;padding:2px 9px 26px;border-bottom:1px solid #29312b}
-    .brand-mark{width:42px;height:42px;border:1px solid #65786a;border-radius:13px;display:grid;place-items:center;color:var(--mint);font-size:18px;font-weight:800;letter-spacing:-2px}
-    .brand-name{font-size:15px;font-weight:800;letter-spacing:.19em}.brand-sub{font-size:9px;color:#8d9991;letter-spacing:.19em;margin-top:4px}
-    .nav-label{font-size:9px;letter-spacing:.2em;color:#748078;font-weight:800;padding:0 12px;margin:25px 0 9px}
-    .nav-btn{width:100%;display:flex;align-items:center;gap:12px;border:1px solid transparent;background:transparent;color:#aab5ad;text-align:left;padding:12px 13px;border-radius:12px;font-size:13px;font-weight:650;margin:3px 0;transition:.16s}
-    .nav-btn:hover{background:#1b221d;color:#fff}.nav-btn.active{background:#26372c;border-color:#3a5140;color:#dff4e5}
-    .nav-icon{width:19px;height:19px;display:grid;place-items:center;flex:none}.nav-icon svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-    .nav-meta{margin-left:auto;font-size:9px;color:#839189;background:#202923;border-radius:999px;padding:4px 7px}
-    .side-spacer{flex:1}
-    .side-status{padding:14px;border:1px solid #2a352d;background:#171e19;border-radius:14px}
-    .side-status-title{font-size:9px;letter-spacing:.17em;color:#8d9991;font-weight:800}.side-status-row{display:flex;align-items:center;gap:8px;margin-top:11px;font-size:11px;color:#c3cdc6}
-    .side-foot{padding:17px 8px 0;color:#657169;font-size:9px;letter-spacing:.12em}
-    .main{min-width:0;padding:0 34px 42px}
-    .topbar{height:78px;border-bottom:1px solid #e4e9e5;display:flex;align-items:center;justify-content:space-between;gap:16px}
-    .crumb{font-size:11px;color:var(--muted)}.crumb strong{color:#343c37;font-weight:700}
-    .top-actions{display:flex;align-items:center;gap:10px}
-    .connection-pill{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 12px;font-size:10px;letter-spacing:.06em;color:#66716b;white-space:nowrap}
-    .dot{width:7px;height:7px;border-radius:50%;background:#a0aaa3;display:inline-block}.dot.ok{background:#4c9a69;box-shadow:0 0 0 3px #e5f3e9}.dot.bad{background:#c65b5b}.dot.warn{background:#c18a3d}
-    .small-btn{border:1px solid #dce3dd;background:#fff;color:#39443d;padding:9px 13px;border-radius:10px;font-size:11px;font-weight:700}.small-btn:hover{border-color:#aabbb0}
-    .page{max-width:1280px;margin:0 auto}.page-head{padding:31px 0 22px;display:flex;align-items:flex-end;justify-content:space-between;gap:18px}
-    .overline{font-size:9px;letter-spacing:.22em;color:var(--mint-strong);font-weight:850}.page-head h1{font-size:clamp(27px,3.4vw,38px);letter-spacing:-.055em;line-height:1.08;margin:9px 0 8px;font-weight:760}.page-head p{color:var(--muted);font-size:13px;margin:0;max-width:620px;line-height:1.65}
-    .head-tag{border:1px solid #dfe8e1;color:#65756a;background:#fbfdfb;padding:9px 12px;border-radius:11px;font-size:10px;letter-spacing:.06em;white-space:nowrap}
-    .connect-panel{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:11px;align-items:end;background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 15px;margin-bottom:19px;box-shadow:var(--shadow)}
-    .field label{display:block;font-size:9px;letter-spacing:.15em;color:#78837c;font-weight:800;margin:0 0 6px}.field input{width:100%;border:1px solid #e0e6e1;border-radius:9px;padding:10px 12px;background:#fbfcfb;outline:none;font-size:12px;color:var(--ink)}.field input:focus{border-color:#8bb99a;box-shadow:0 0 0 3px #e9f4ec}
-    .connect-actions{display:flex;gap:7px}.btn{border:1px solid #dce3dd;background:#fff;color:#39443d;padding:10px 15px;border-radius:10px;font-size:11px;font-weight:750;transition:.15s}.btn:hover:not(:disabled){transform:translateY(-1px);border-color:#aabbb0}.btn.primary{background:var(--dark);border-color:var(--dark);color:#f6faf7}.btn.primary:hover:not(:disabled){background:#26342a}.btn.soft{background:var(--mint-bg);border-color:#d1e7d7;color:#356c4a}
-    .connect-hint{grid-column:1/-1;font-size:10px;color:#8a948e;margin:1px 2px 0;line-height:1.5}
-    .metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:27px}
-    .metric{background:#fff;border:1px solid var(--line);border-radius:15px;padding:15px 17px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow)}
-    .metric-icon{width:38px;height:38px;background:#f0f5f1;color:#4b7b5b;border-radius:11px;display:grid;place-items:center;flex:none}.metric-icon svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-    .metric-label{font-size:9px;letter-spacing:.13em;color:#88928c;font-weight:800}.metric-value{font-size:15px;font-weight:750;margin-top:3px;letter-spacing:-.02em}.metric-sub{font-size:9px;color:#929b95;margin-top:2px}
-    .section-bar{display:flex;align-items:end;justify-content:space-between;gap:15px;margin:0 0 12px}.section-bar h2{font-size:17px;letter-spacing:-.025em;margin:0}.section-bar p{font-size:10px;color:#89938d;margin:4px 0 0}.section-count{font-size:10px;color:#758078;border:1px solid #e0e7e1;padding:6px 9px;border-radius:9px;background:#fff}
-    .devices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
-    .device{background:#fff;border:1px solid var(--line);border-radius:17px;padding:17px;min-height:166px;display:flex;flex-direction:column;justify-content:space-between;gap:14px;box-shadow:var(--shadow);transition:.16s}
-    .device:hover{transform:translateY(-2px);border-color:#d2ded5;box-shadow:0 16px 36px rgba(22,34,26,.075)}
-    .device-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.device-icon{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:#f0f5f1;color:#4c7659}.device-icon svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.65;stroke-linecap:round;stroke-linejoin:round}
-    .state{font-size:9px;letter-spacing:.12em;font-weight:850;border:1px solid #e5eae6;border-radius:999px;padding:6px 8px;color:#8a948d;background:#fafbfa}.state.on{color:#3d8054;border-color:#d5e9d9;background:#eef7f0}.state.pending{color:#946d30;border-color:#efe2c9;background:#fbf5e9}
-    .device h3{font-size:14px;margin:12px 0 3px;letter-spacing:-.015em}.device-meta{font-size:10px;color:#98a19b}.device-bottom{border-top:1px solid #eef1ee;padding-top:12px;display:flex;align-items:center;justify-content:space-between;gap:8px}.actual{font-size:10px;color:#818c85}.toggle{border:1px solid #dce6df;background:#eff6f0;color:#3f7c52;border-radius:9px;padding:8px 12px;min-width:93px;font-size:10px;font-weight:800}.toggle.off{background:#f7f8f7;border-color:#e2e7e3;color:#626d65}.toggle:hover:not(:disabled){border-color:#9bbba2}.toggle:disabled{opacity:.4}
-    .below-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:13px;margin-top:19px}.panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:17px;box-shadow:var(--shadow)}.panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:7px}.panel h3{font-size:12px;margin:0}.panel-caption{font-size:10px;color:#8b958f;margin:0 0 12px;line-height:1.5}
-    .status-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid #edf0ed;font-size:10px;color:#7d8881}.status-row strong{color:#38423b;font-weight:700}.activity-list{display:flex;flex-direction:column;gap:9px;max-height:140px;overflow:auto}.activity{display:flex;gap:9px;align-items:flex-start;font-size:10px;color:#69756d;line-height:1.5}.activity-mark{width:6px;height:6px;border-radius:50%;background:#8bb99a;margin-top:4px;flex:none}.activity time{color:#a1aaa4;font-size:9px;margin-left:auto;white-space:nowrap}
-    .notice{font-size:10px;color:#8a948e;min-height:18px;margin:14px 1px}.notice.good{color:#3e8055}.notice.warn{color:#986d2b}.notice.err{color:#b94a4a}
-    .view{display:none}.view.active{display:block}
-    /* TOKO section */
-    .toko-layout{display:grid;grid-template-columns:minmax(0,1fr) 285px;gap:14px;align-items:stretch;margin-top:3px}
-    .chat-shell{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);min-height:560px;display:flex;flex-direction:column;overflow:hidden}
-    .chat-head{padding:16px 19px;border-bottom:1px solid #edf0ed;display:flex;align-items:center;justify-content:space-between;gap:12px}.toko-identity{display:flex;align-items:center;gap:11px}.toko-avatar{width:39px;height:39px;border-radius:13px;background:var(--dark);color:var(--mint);display:grid;place-items:center}.toko-avatar svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}.toko-name{font-size:13px;font-weight:800}.toko-desc{font-size:9px;color:#909a93;margin-top:3px}.agent-status{font-size:9px;color:#9b7436;border:1px solid #efe4d0;background:#fcf7ed;border-radius:999px;padding:7px 10px;white-space:nowrap}
-    .chat-body{flex:1;padding:22px;display:flex;flex-direction:column;gap:15px;background:linear-gradient(180deg,#fcfdfc,#fff)}.welcome-card{max-width:590px;border:1px solid #e9eeea;border-radius:15px;padding:18px;background:#fbfdfb}.welcome-title{font-size:14px;font-weight:750;margin-bottom:7px}.welcome-text{font-size:11px;line-height:1.7;color:#78837b}.prompt-label{font-size:9px;letter-spacing:.14em;color:#909a93;font-weight:800;margin:9px 0 0}.suggestions{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}.suggestion{background:#fff;border:1px solid #e3e9e4;border-radius:999px;padding:8px 10px;color:#68756b;font-size:9px}
-    .chat-placeholder{margin:auto;max-width:430px;text-align:center;padding:25px 15px}.chat-placeholder-icon{width:54px;height:54px;border-radius:17px;margin:0 auto 14px;background:#f0f5f1;color:#60836a;display:grid;place-items:center}.chat-placeholder-icon svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}.chat-placeholder h3{font-size:16px;margin:0 0 7px}.chat-placeholder p{font-size:11px;color:#89938c;line-height:1.7;margin:0}
-    .chat-compose{border-top:1px solid #edf0ed;padding:14px;display:flex;gap:9px;align-items:center;background:#fff}.chat-compose input{min-width:0;flex:1;border:1px solid #e2e8e3;border-radius:11px;padding:12px 13px;background:#f9fbf9;font-size:11px;outline:none}.chat-compose input:disabled{color:#a0a9a2;background:#f7f8f7}.send-chat{width:40px;height:40px;border:0;border-radius:11px;background:#e9eeea;color:#97a19a;display:grid;place-items:center}.send-chat svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-    .toko-side{display:flex;flex-direction:column;gap:13px}.capability{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px}.capability h3{font-size:12px;margin:0 0 10px}.capability-item{display:flex;gap:9px;align-items:flex-start;padding:9px 0;border-top:1px solid #eef1ee;font-size:10px;color:#667269;line-height:1.5}.capability-item:first-of-type{border-top:0}.check{color:#4c8c60;font-weight:900}.pending-dot{color:#bc8b3e;font-weight:900}.integration-note{background:#fbf5e9;border:1px solid #f0e3ca;border-radius:15px;padding:14px}.integration-note strong{font-size:10px;color:#8a6428;display:block;margin-bottom:5px}.integration-note p{font-size:10px;color:#927b57;line-height:1.6;margin:0}
-    .mobile-nav{display:none}
-    @media(max-width:1050px){.app{grid-template-columns:220px minmax(0,1fr)}.main{padding:0 24px 35px}.devices{grid-template-columns:repeat(2,minmax(0,1fr))}.toko-layout{grid-template-columns:minmax(0,1fr) 250px}}
-    @media(max-width:760px){.app{display:block}.sidebar{display:none}.main{padding:0 15px 88px}.topbar{height:63px}.page-head{padding:25px 0 18px;align-items:flex-start;flex-direction:column;gap:10px}.head-tag{display:none}.connect-panel{grid-template-columns:1fr 1fr}.connect-actions{grid-column:1/-1}.connect-actions .btn{flex:1}.connect-hint{grid-column:1/-1}.metrics{gap:8px}.metric{padding:11px 10px;gap:8px}.metric-icon{width:32px;height:32px}.metric-value{font-size:12px}.metric-label{font-size:8px}.devices{gap:9px}.device{padding:13px;min-height:154px}.device h3{font-size:12px}.device-icon{width:36px;height:36px}.toggle{min-width:78px;padding:8px 8px;font-size:9px}.below-grid{grid-template-columns:1fr}.toko-layout{grid-template-columns:1fr}.chat-shell{min-height:510px}.toko-side{display:grid;grid-template-columns:1fr 1fr}.mobile-nav{display:grid;grid-template-columns:1fr 1fr;position:fixed;bottom:0;left:0;right:0;background:rgba(17,21,18,.97);backdrop-filter:blur(12px);padding:9px 13px calc(9px + env(safe-area-inset-bottom));gap:8px;z-index:20;border-top:1px solid #303832}.mobile-nav .nav-btn{justify-content:center;margin:0;padding:10px}.mobile-nav .nav-btn.active{background:#2a3b30}.mobile-nav .nav-meta{display:none}}
-    @media(max-width:420px){.top-actions .small-btn{padding:8px 9px;font-size:9px}.connection-pill{padding:7px 9px;font-size:9px}.metrics{grid-template-columns:repeat(3,minmax(0,1fr))}.metric-sub{display:none}.devices{grid-template-columns:repeat(2,minmax(0,1fr))}.toko-side{grid-template-columns:1fr}.chat-head{padding:13px}.chat-body{padding:15px}.chat-shell{min-height:500px}}
+    :root{color-scheme:light;--ink:#171b19;--muted:#7b8580;--paper:#f4f6f4;--line:#e5eae6;--dark:#111512;--mint:#a8d8bf;--green:#3e8761;--green-bg:#eaf5ee;--amber:#a97727;--red:#b94a4a;--shadow:0 12px 34px rgba(22,34,26,.055)}
+    *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--paper);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}button,input{font:inherit}button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.45}
+    .app{min-height:100vh;display:grid;grid-template-columns:252px minmax(0,1fr)}.sidebar{background:var(--dark);color:#eff4f0;padding:25px 17px 18px;display:flex;flex-direction:column;min-height:100vh;position:sticky;top:0;height:100vh}.brand{display:flex;align-items:center;gap:12px;padding:2px 9px 26px;border-bottom:1px solid #29312b}.brand-mark{width:42px;height:42px;border:1px solid #65786a;border-radius:13px;display:grid;place-items:center;color:var(--mint);font-size:18px;font-weight:800}.brand-name{font-size:15px;font-weight:800;letter-spacing:.19em}.brand-sub{font-size:9px;color:#8d9991;letter-spacing:.19em;margin-top:4px}.nav-label{font-size:9px;letter-spacing:.2em;color:#748078;font-weight:800;padding:0 12px;margin:25px 0 9px}.nav-btn{width:100%;display:flex;align-items:center;gap:12px;border:1px solid transparent;background:transparent;color:#aab5ad;text-align:left;padding:12px 13px;border-radius:12px;font-size:13px;font-weight:650;margin:3px 0}.nav-btn:hover{background:#1b221d;color:#fff}.nav-btn.active{background:#26372c;border-color:#3a5140;color:#dff4e5}.nav-meta{margin-left:auto;font-size:9px;color:#839189;background:#202923;border-radius:999px;padding:4px 7px}.side-spacer{flex:1}.side-status{padding:14px;border:1px solid #2a352d;background:#171e19;border-radius:14px}.side-status-title{font-size:9px;letter-spacing:.17em;color:#8d9991;font-weight:800}.side-status-row{display:flex;align-items:center;gap:8px;margin-top:11px;font-size:11px;color:#c3cdc6}.side-foot{padding:17px 8px 0;color:#657169;font-size:9px;letter-spacing:.12em}
+    .main{min-width:0;padding:0 34px 42px}.topbar{height:78px;border-bottom:1px solid #e4e9e5;display:flex;align-items:center;justify-content:space-between;gap:16px}.crumb{font-size:11px;color:var(--muted)}.crumb strong{color:#343c37}.top-actions{display:flex;align-items:center;gap:10px}.connection-pill{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 12px;font-size:10px;letter-spacing:.06em;color:#66716b;white-space:nowrap}.dot{width:7px;height:7px;border-radius:50%;background:#a0aaa3;display:inline-block}.dot.ok{background:#4c9a69;box-shadow:0 0 0 3px #e5f3e9}.dot.bad{background:#c65b5b}.small-btn,.btn{border:1px solid #dce3dd;background:#fff;color:#39443d;padding:9px 13px;border-radius:10px;font-size:11px;font-weight:700}.btn.primary{background:var(--dark);border-color:var(--dark);color:#f6faf7}.btn:hover:not(:disabled),.small-btn:hover{border-color:#aabbb0}
+    .page{max-width:1280px;margin:0 auto}.page-head{padding:31px 0 22px;display:flex;align-items:flex-end;justify-content:space-between;gap:18px}.overline{font-size:9px;letter-spacing:.22em;color:var(--green);font-weight:850}.page-head h1{font-size:clamp(27px,3.4vw,38px);letter-spacing:-.055em;line-height:1.08;margin:9px 0 8px}.page-head p{color:var(--muted);font-size:13px;margin:0;max-width:620px;line-height:1.65}.head-tag{border:1px solid #dfe8e1;color:#65756a;background:#fbfdfb;padding:9px 12px;border-radius:11px;font-size:10px}
+    .connect-panel{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:11px;align-items:end;background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 15px;margin-bottom:19px;box-shadow:var(--shadow)}.field label{display:block;font-size:9px;letter-spacing:.15em;color:#78837c;font-weight:800;margin:0 0 6px}.field input{width:100%;border:1px solid #e0e6e1;border-radius:9px;padding:10px 12px;background:#fbfcfb;outline:none;font-size:12px;color:var(--ink)}.connect-actions{display:flex;gap:7px}.connect-hint{grid-column:1/-1;font-size:10px;color:#8a948e;margin:1px 2px 0;line-height:1.5}
+    .metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:27px}.metric{background:#fff;border:1px solid var(--line);border-radius:15px;padding:15px 17px;box-shadow:var(--shadow)}.metric-label{font-size:9px;letter-spacing:.13em;color:#88928c;font-weight:800}.metric-value{font-size:15px;font-weight:750;margin-top:4px}.metric-sub{font-size:9px;color:#929b95;margin-top:3px}.section-bar{display:flex;align-items:end;justify-content:space-between;gap:15px;margin:0 0 12px}.section-bar h2{font-size:17px;margin:0}.section-bar p{font-size:10px;color:#89938d;margin:4px 0 0}.section-count{font-size:10px;color:#758078;border:1px solid #e0e7e1;padding:6px 9px;border-radius:9px;background:#fff}
+    .devices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}.device{background:#fff;border:1px solid var(--line);border-radius:17px;padding:17px;min-height:166px;display:flex;flex-direction:column;justify-content:space-between;gap:14px;box-shadow:var(--shadow)}.device-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.device-icon{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:#f0f5f1;color:#4c7659;font-size:20px}.state{font-size:9px;letter-spacing:.12em;font-weight:850;border:1px solid #e5eae6;border-radius:999px;padding:6px 8px;color:#8a948d;background:#fafbfa}.state.on{color:#3d8054;border-color:#d5e9d9;background:#eef7f0}.state.pending{color:#946d30;border-color:#efe2c9;background:#fbf5e9}.device h3{font-size:14px;margin:12px 0 3px}.device-meta{font-size:10px;color:#98a19b}.device-bottom{border-top:1px solid #eef1ee;padding-top:12px;display:flex;align-items:center;justify-content:space-between;gap:8px}.actual{font-size:10px;color:#818c85}.toggle{border:1px solid #dce6df;background:#eff6f0;color:#3f7c52;border-radius:9px;padding:8px 12px;min-width:93px;font-size:10px;font-weight:800}.toggle.off{background:#f7f8f7;border-color:#e2e7e3;color:#626d65}
+    .below-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:13px;margin-top:19px}.panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:17px;box-shadow:var(--shadow)}.panel h3{font-size:12px;margin:0 0 10px}.status-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid #edf0ed;font-size:10px;color:#7d8881}.status-row strong{color:#38423b}.activity-list{display:flex;flex-direction:column;gap:9px;max-height:150px;overflow:auto}.activity{display:flex;gap:9px;align-items:flex-start;font-size:10px;color:#69756d;line-height:1.5}.activity-mark{width:6px;height:6px;border-radius:50%;background:#8bb99a;margin-top:4px;flex:none}.activity time{color:#a1aaa4;font-size:9px;margin-left:auto;white-space:nowrap}.notice{font-size:10px;color:#8a948e;min-height:18px;margin:14px 1px}.notice.good{color:#3e8055}.notice.warn{color:#986d2b}.notice.err{color:#b94a4a}.view{display:none}.view.active{display:block}
+    .toko-layout{display:grid;grid-template-columns:minmax(0,1fr) 285px;gap:14px;margin-top:3px}.chat-shell{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);min-height:560px;display:flex;flex-direction:column;overflow:hidden}.chat-head{padding:16px 19px;border-bottom:1px solid #edf0ed;display:flex;align-items:center;justify-content:space-between;gap:12px}.chat-body{flex:1;padding:22px;display:flex;flex-direction:column;gap:15px}.welcome-card{max-width:590px;border:1px solid #e9eeea;border-radius:15px;padding:18px;background:#fbfdfb}.welcome-title{font-size:14px;font-weight:750;margin-bottom:7px}.welcome-text{font-size:11px;line-height:1.7;color:#78837b}.chat-placeholder{margin:auto;max-width:430px;text-align:center;padding:25px 15px}.chat-placeholder h3{font-size:16px}.chat-placeholder p{font-size:11px;color:#89938c;line-height:1.7}.chat-compose{border-top:1px solid #edf0ed;padding:14px;display:flex;gap:9px}.chat-compose input{min-width:0;flex:1;border:1px solid #e2e8e3;border-radius:11px;padding:12px;background:#f9fbf9;font-size:11px}.toko-side{display:flex;flex-direction:column;gap:13px}.capability,.integration-note{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px}.integration-note{background:#fbf5e9;border-color:#f0e3ca;font-size:10px;color:#927b57;line-height:1.6}.mobile-nav{display:none}
+    @media(max-width:1050px){.app{grid-template-columns:220px minmax(0,1fr)}.main{padding:0 24px 35px}.devices{grid-template-columns:repeat(2,minmax(0,1fr))}.toko-layout{grid-template-columns:1fr 250px}}
+    @media(max-width:760px){.app{display:block}.sidebar{display:none}.main{padding:0 15px 85px}.topbar{height:63px}.page-head{padding:25px 0 18px;align-items:flex-start;flex-direction:column}.head-tag{display:none}.connect-panel{grid-template-columns:1fr 1fr}.connect-actions{grid-column:1/-1}.connect-actions .btn{flex:1}.connect-hint{grid-column:1/-1}.metrics{gap:8px}.metric{padding:11px 10px}.metric-value{font-size:12px}.devices{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.device{padding:13px;min-height:154px}.toggle{min-width:78px;padding:8px}.below-grid,.toko-layout{grid-template-columns:1fr}.mobile-nav{display:grid;grid-template-columns:1fr 1fr;position:fixed;bottom:0;left:0;right:0;background:rgba(17,21,18,.97);padding:9px 13px;gap:8px;z-index:20;border-top:1px solid #303832}.mobile-nav .nav-btn{justify-content:center;margin:0}.mobile-nav .nav-btn.active{background:#2a3b30}}
   </style>
 </head>
 <body>
@@ -79,185 +27,292 @@
   <aside class="sidebar">
     <div class="brand"><div class="brand-mark">T.</div><div><div class="brand-name">TOKAMAK</div><div class="brand-sub">LAB SYSTEMS</div></div></div>
     <div class="nav-label">PLATFORM</div>
-    <button class="nav-btn active" data-view="iot"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 13h6V4H4zM14 20h6v-9h-6zM14 8h6V4h-6zM4 20h6v-3H4z"/></svg></span>IoT Control<span class="nav-meta">05</span></button>
+    <button class="nav-btn active" data-view="iot">▦ IoT Control <span class="nav-meta">05</span></button>
     <div class="nav-label">INTELLIGENCE</div>
-    <button class="nav-btn" data-view="toko"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 3a7 7 0 0 0-4 12.7V19h8v-3.3A7 7 0 0 0 12 3Z"/><path d="M9 22h6M9 16h6M12 7v3M8.5 10.5l2 1.2M15.5 10.5l-2 1.2"/></svg></span>TOKO AI<span class="nav-meta">BETA</span></button>
+    <button class="nav-btn" data-view="toko">✧ TOKO AI <span class="nav-meta">BETA</span></button>
     <div class="side-spacer"></div>
     <div class="side-status"><div class="side-status-title">CLOUD LINK</div><div class="side-status-row"><span class="dot" id="sideDot"></span><span id="sideStatus">Not connected</span></div></div>
     <div class="side-foot">TOKAMAK LAB · REMOTE OPERATIONS</div>
   </aside>
-
   <main class="main">
-    <header class="topbar">
-      <div class="crumb">TOKAMAK <span style="color:#c2cac4">/</span> <strong id="crumbCurrent">IoT Control</strong></div>
-      <div class="top-actions"><div class="connection-pill"><span class="dot" id="topDot"></span><span id="topConnection">MQTTY DISCONNECTED</span></div><button class="small-btn" id="scrollConnect">MQTTY Settings</button></div>
-    </header>
-
-    <section class="view active" id="view-iot">
-      <div class="page">
-        <div class="page-head"><div><div class="overline">REMOTE OPERATIONS / 01</div><h1>IoT Control</h1><p>Monitor and operate connected laboratory devices from anywhere. Commands are confirmed against the actual ESP8266 state.</p></div><div class="head-tag">TOKAMAK · DEVICE NETWORK</div></div>
-        <section class="connect-panel" id="connectPanel" aria-label="MQTTY connection">
-          <div class="field"><label for="username">MQTTY USERNAME</label><input id="username" autocomplete="username" placeholder="Generated MQTTY username"></div>
-          <div class="field"><label for="password">MQTTY PASSWORD</label><input id="password" type="password" autocomplete="current-password" placeholder="Credential password"></div>
-          <div class="connect-actions"><button class="btn primary" id="connectBtn">Connect to MQTTY</button><button class="btn" id="disconnectBtn" disabled>Disconnect</button></div>
-          <p class="connect-hint">Use the generated username and password from your dedicated MQTTY credential, restricted to the <b>tokamak-lab</b> topic prefix. Credentials stay in page memory only and are never written into this HTML.</p>
-        </section>
-
-        <div class="metrics">
-          <div class="metric"><div class="metric-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="8" height="7" rx="1.5"/><rect x="13" y="4" width="8" height="7" rx="1.5"/><rect x="3" y="13" width="8" height="7" rx="1.5"/><rect x="13" y="13" width="8" height="7" rx="1.5"/></svg></div><div><div class="metric-label">REGISTERED DEVICES</div><div class="metric-value">05 Devices</div><div class="metric-sub">Configured relay channels</div></div></div>
-          <div class="metric"><div class="metric-icon"><svg viewBox="0 0 24 24"><path d="M5 12a7 7 0 0 1 14 0M8 12a4 4 0 0 1 8 0M11 12a1 1 0 0 1 2 0M12 13v7"/></svg></div><div><div class="metric-label">ESP8266 STATUS</div><div class="metric-value" id="espMetric">Unknown</div><div class="metric-sub">Controller connectivity</div></div></div>
-          <div class="metric"><div class="metric-icon"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/><circle cx="8" cy="7" r="1.5"/><circle cx="16" cy="12" r="1.5"/><circle cx="10" cy="17" r="1.5"/></svg></div><div><div class="metric-label">MQTTY BROKER</div><div class="metric-value" id="brokerMetric">Offline</div><div class="metric-sub">Secure WebSocket link</div></div></div>
-        </div>
-
-        <div class="section-bar"><div><h2>Device overview</h2><p>Live relay state · Tap a control to switch its output</p></div><div class="section-count" id="deviceCount">0 / 5 REPORTING</div></div>
-        <section class="devices" id="devices">
-          <article class="device" data-device="round_lights"><div class="device-top"><div><div class="device-icon"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M8.5 14.5a6 6 0 1 1 7 0c-.8.6-1.5 1.3-1.5 2.5h-4c0-1.2-.7-1.9-1.5-2.5Z"/></svg></div><h3>Round Lights</h3><div class="device-meta">Relay 02 · Lighting</div></div><span class="state" id="state-round_lights">UNKNOWN</span></div><div class="device-bottom"><span class="actual" id="actual-round_lights">Waiting for state</span><button class="toggle" disabled>Turn ON</button></div></article>
-          <article class="device" data-device="fog_light"><div class="device-top"><div><div class="device-icon"><svg viewBox="0 0 24 24"><path d="M3 8h12a3 3 0 0 0 0-6M3 13h17a2 2 0 0 0 0-4M3 18h12a3 3 0 0 1 0 6"/></svg></div><h3>Fog Light</h3><div class="device-meta">Relay 03 · Lighting</div></div><span class="state" id="state-fog_light">UNKNOWN</span></div><div class="device-bottom"><span class="actual" id="actual-fog_light">Waiting for state</span><button class="toggle" disabled>Turn ON</button></div></article>
-          <article class="device" data-device="middle_fan"><div class="device-top"><div><div class="device-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M12 10c-1-3-1-7 2-7 4 0 4 5 0 8M14 12c3-1 7-1 7 2 0 4-5 4-8 0M12 14c1 3 1 7-2 7-4 0-4-5 0-8M10 12c-3 1-7 1-7-2 0-4 5-4 8 0"/></svg></div><h3>Middle Fan</h3><div class="device-meta">Relay 05 · Ventilation</div></div><span class="state" id="state-middle_fan">UNKNOWN</span></div><div class="device-bottom"><span class="actual" id="actual-middle_fan">Waiting for state</span><button class="toggle" disabled>Turn ON</button></div></article>
-          <article class="device" data-device="main_light"><div class="device-top"><div><div class="device-icon"><svg viewBox="0 0 24 24"><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4"/><circle cx="12" cy="12" r="5"/></svg></div><h3>Main Light</h3><div class="device-meta">Relay 06 · Lighting</div></div><span class="state" id="state-main_light">UNKNOWN</span></div><div class="device-bottom"><span class="actual" id="actual-main_light">Waiting for state</span><button class="toggle" disabled>Turn ON</button></div></article>
-          <article class="device" data-device="two_fans"><div class="device-top"><div><div class="device-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M12 10c-1-3-1-7 2-7 4 0 4 5 0 8M14 12c3-1 7-1 7 2 0 4-5 4-8 0M12 14c1 3 1 7-2 7-4 0-4-5 0-8M10 12c-3 1-7 1-7-2 0-4 5-4 8 0"/></svg></div><h3>Two Fans</h3><div class="device-meta">Relay 08 · Ventilation</div></div><span class="state" id="state-two_fans">UNKNOWN</span></div><div class="device-bottom"><span class="actual" id="actual-two_fans">Waiting for state</span><button class="toggle" disabled>Turn ON</button></div></article>
-        </section>
-        <div id="notice" class="notice" role="status">Connect to MQTTY to load the latest device states.</div>
-        <div class="below-grid">
-          <section class="panel"><div class="panel-head"><h3>System connectivity</h3><span style="font-size:9px;color:#9aa39d">LIVE STATUS</span></div><p class="panel-caption">Cloud and local device communication.</p><div class="status-row"><span>MQTTY cloud broker</span><strong id="brokerStatus">Disconnected</strong></div><div class="status-row"><span>TOKAMAK bridge</span><strong id="bridgeStatus">Unknown</strong></div><div class="status-row"><span>ESP8266 controller</span><strong id="espStatusDetail">Unknown</strong></div></section>
-          <section class="panel"><div class="panel-head"><h3>Recent activity</h3><span style="font-size:9px;color:#9aa39d">SESSION</span></div><p class="panel-caption">Commands and device confirmations in this session.</p><div class="activity-list" id="activityList"><div class="activity"><span class="activity-mark"></span><span>Dashboard ready. Connect to MQTTY to begin.</span></div></div></section>
-        </div>
+    <header class="topbar"><div class="crumb">TOKAMAK / <strong id="crumbCurrent">IoT Control</strong></div><div class="top-actions"><div class="connection-pill"><span class="dot" id="topDot"></span><span id="topConnection">MQTTY DISCONNECTED</span></div><button class="small-btn" id="scrollConnect">MQTTY Settings</button></div></header>
+    <section class="view active" id="view-iot"><div class="page">
+      <div class="page-head"><div><div class="overline">REMOTE OPERATIONS / 01</div><h1>IoT Control</h1><p>Monitor and operate connected laboratory devices from anywhere. Commands are confirmed against actual ESP8266 state.</p></div><div class="head-tag">TOKAMAK · DEVICE NETWORK</div></div>
+      <section class="connect-panel" id="connectPanel">
+        <div class="field"><label for="username">MQTTY GENERATED USERNAME</label><input id="username" autocomplete="username" placeholder="Generated credential username"></div>
+        <div class="field"><label for="password">MQTTY PASSWORD</label><input id="password" type="password" autocomplete="current-password" placeholder="Credential password"></div>
+        <div class="connect-actions"><button class="btn primary" id="connectBtn">Connect to MQTTY</button><button class="btn" id="disconnectBtn" disabled>Disconnect</button></div>
+        <p class="connect-hint">Enter the generated username shown on your MQTTY credential. The topic prefix <b>tokamak-lab</b> is an access scope, not automatically the username. Credentials are kept in page memory only.</p>
+      </section>
+      <div class="metrics">
+        <div class="metric"><div class="metric-label">REGISTERED DEVICES</div><div class="metric-value">05 Devices</div><div class="metric-sub">Configured relay channels</div></div>
+        <div class="metric"><div class="metric-label">ESP8266 STATUS</div><div class="metric-value" id="espMetric">UNKNOWN</div><div class="metric-sub">Controller connectivity</div></div>
+        <div class="metric"><div class="metric-label">MQTTY BROKER</div><div class="metric-value" id="brokerMetric">Offline</div><div class="metric-sub">Secure WebSocket link</div></div>
       </div>
-    </section>
-
-    <section class="view" id="view-toko">
-      <div class="page">
-        <div class="page-head"><div><div class="overline">LAB INTELLIGENCE / 02</div><h1>TOKO AI</h1><p>Your laboratory assistant. Ask questions about the system and, once connected, issue device commands using natural language.</p></div><div class="head-tag">TOKAMAK · AI ASSISTANT</div></div>
-        <div class="toko-layout">
-          <section class="chat-shell">
-            <div class="chat-head"><div class="toko-identity"><div class="toko-avatar"><svg viewBox="0 0 24 24"><rect x="5" y="7" width="14" height="12" rx="3"/><path d="M12 3v4M9 12h.01M15 12h.01M9 16h6M3 11v4M21 11v4"/></svg></div><div><div class="toko-name">TOKO <span style="font-size:9px;color:#87928a;font-weight:600">· LAB ASSISTANT</span></div><div class="toko-desc">TOKAMAK conversational interface</div></div></div><span class="agent-status" id="tokoStatus">BACKEND NOT CONNECTED</span></div>
-            <div class="chat-body">
-              <div class="welcome-card"><div class="welcome-title">Hello, I'm TOKO.</div><div class="welcome-text">I'm your lab assistant. I can help interpret system information and control connected devices when the TOKO agent connection is enabled.</div><div class="prompt-label">EXAMPLE REQUESTS</div><div class="suggestions"><span class="suggestion">Turn ON the Middle Fan</span><span class="suggestion">Show all device states</span><span class="suggestion">Turn OFF the Main Light</span></div></div>
-              <div class="chat-placeholder"><div class="chat-placeholder-icon"><svg viewBox="0 0 24 24"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l1.8-3A7.5 7.5 0 1 1 20 11.5Z"/><path d="M8.5 11.5h.01M12.5 11.5h.01M16.5 11.5h.01"/></svg></div><h3>TOKO is ready for integration</h3><p>The separate TOKO interface is in place. Its live chat will be enabled after the TOKO-to-MQTTY adapter is installed on TOKABOT and connected to your existing Groq + MCP agent.</p></div>
-            </div>
-            <div class="chat-compose"><input type="text" placeholder="TOKO chat will be available after backend connection…" disabled aria-label="TOKO message"><button class="send-chat" disabled aria-label="Send message"><svg viewBox="0 0 24 24"><path d="m21 3-7.5 18-3.5-7-7-3.5L21 3Z"/><path d="M10 14 21 3"/></svg></button></div>
-          </section>
-          <aside class="toko-side">
-            <section class="capability"><h3>Assistant capabilities</h3><div class="capability-item"><span class="check">✓</span><span>Existing TOKO + Groq agent retained</span></div><div class="capability-item"><span class="check">✓</span><span>Existing MCP device tools retained</span></div><div class="capability-item"><span class="pending-dot">○</span><span>MQTTY chat request/response adapter pending</span></div><div class="capability-item"><span class="pending-dot">○</span><span>Live conversation history pending</span></div></section>
-            <section class="integration-note"><strong>INTEGRATION STATUS</strong><p>This is the TOKO UI shell, not a live chatbot yet. The browser chat is intentionally disabled until the secure backend adapter is installed and tested.</p></section>
-          </aside>
-        </div>
-      </div>
-    </section>
+      <div class="section-bar"><div><h2>Device overview</h2><p>Live relay state · Tap a control to switch its output</p></div><div class="section-count" id="deviceCount">0 / 5 REPORTING</div></div>
+      <section class="devices">
+        <article class="device" data-device="round_lights"><div class="device-top"><div><div class="device-icon">☼</div><h3>Round Lights</h3><div class="device-meta">Relay 02 · Lighting</div></div><span class="state" id="state-round_lights">UNKNOWN</span></div><div class="device-bottom"><span class="actual" id="actual-round_lights">Waiting for state</span><button class="toggle" disabled>Turn ON</button></div></article>
+        <article class="device" data-device="fog_light"><div class="device-top"><div><div class="device-icon">≋</div><h3>Fog Light</h3><div class="device-meta">Relay 03 · Lighting</div></div><span class="state" id="state-fog_light">UNKNOWN</span></div><div class="device-bottom"><span class="actual" id="actual-fog_light">Waiting for state</span><button class="toggle" disabled>Turn ON</button></div></article>
+        <article class="device" data-device="middle_fan"><div class="device-top"><div><div class="device-icon">✥</div><h3>Middle Fan</h3><div class="device-meta">Relay 05 · Ventilation</div></div><span class="state" id="state-middle_fan">UNKNOWN</span></span></div><div class="device-bottom"><span class="actual" id="actual-middle_fan">Waiting for state</span><button class="toggle" disabled>Turn ON</button></div></article>
+        <article class="device" data-device="main_light"><div class="device-top"><div><div class="device-icon">☀</div><h3>Main Light</h3><div class="device-meta">Relay 06 · Lighting</div></div><span class="state" id="state-main_light">UNKNOWN</span></div><div class="device-bottom"><span class="actual" id="actual-main_light">Waiting for state</span><button class="toggle" disabled>Turn ON</button></div></article>
+        <article class="device" data-device="two_fans"><div class="device-top"><div><div class="device-icon">✥</div><h3>Two Fans</h3><div class="device-meta">Relay 08 · Ventilation</div></div><span class="state" id="state-two_fans">UNKNOWN</span></div><div class="device-bottom"><span class="actual" id="actual-two_fans">Waiting for state</span><button class="toggle" disabled>Turn ON</button></div></article>
+      </section>
+      <div id="notice" class="notice" role="status">Connect to MQTTY to load device states.</div>
+      <div class="below-grid"><section class="panel"><h3>System connectivity</h3><div class="status-row"><span>MQTTY cloud broker</span><strong id="brokerStatus">Disconnected</strong></div><div class="status-row"><span>TOKAMAK bridge</span><strong id="bridgeStatus">Unknown</strong></div><div class="status-row"><span>ESP8266 controller</span><strong id="espStatusDetail">Unknown</strong></div></section><section class="panel"><h3>Recent activity</h3><div class="activity-list" id="activityList"><div class="activity"><span class="activity-mark"></span><span>Dashboard ready. Connect to MQTTY to begin.</span></div></div></section></div>
+    </div></section>
+    <section class="view" id="view-toko"><div class="page">
+      <div class="page-head"><div><div class="overline">LAB INTELLIGENCE / 02</div><h1>TOKO AI</h1><p>Your laboratory assistant. Natural-language device control will connect to the existing TOKO + MCP agent.</p></div><div class="head-tag">TOKAMAK · AI ASSISTANT</div></div>
+      <div class="toko-layout"><section class="chat-shell"><div class="chat-head"><strong>TOKO · LAB ASSISTANT</strong><span id="tokoStatus">BACKEND NOT CONNECTED</span></div><div class="chat-body"><div class="welcome-card"><div class="welcome-title">Hello, I'm TOKO.</div><div class="welcome-text">I can help you monitor and control your laboratory. The chat interface is ready; the secure TOKO-to-MQTTY adapter is a separate integration step.</div></div><div class="chat-placeholder"><h3>TOKO backend integration pending</h3><p>The existing Groq + MCP agent will be connected after the remote device controls are verified.</p></div></div><div class="chat-compose"><input disabled placeholder="TOKO chat will be enabled after backend integration"><button class="btn" disabled>Send</button></div></section><aside class="toko-side"><section class="capability"><h3>Assistant capabilities</h3><p>✓ Existing TOKO + Groq agent</p><p>✓ Existing MCP device tools</p><p>○ MQTTY chat adapter pending</p></section><section class="integration-note"><b>INTEGRATION STATUS</b><br>This is the TOKO UI shell, not a live chatbot yet.</section></aside></div>
+    </div></section>
   </main>
 </div>
-<nav class="mobile-nav" aria-label="Main navigation"><button class="nav-btn active" data-view="iot"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 13h6V4H4zM14 20h6v-9h-6zM14 8h6V4h-6zM4 20h6v-3H4z"/></svg></span>IoT Control</button><button class="nav-btn" data-view="toko"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 3a7 7 0 0 0-4 12.7V19h8v-3.3A7 7 0 0 0 12 3Z"/><path d="M9 22h6M9 16h6"/></svg></span>TOKO AI</button></nav>
+<nav class="mobile-nav"><button class="nav-btn active" data-view="iot">IoT Control</button><button class="nav-btn" data-view="toko">TOKO AI</button></nav>
 <script>
 (() => {
   'use strict';
-  const BROKER_URL='wss://broker.mqtty.com:8884/mqtt';
-  const TELEMETRY_FILTER='tokamak-lab/demo/#';
-  const COMMAND_TOPIC='tokamak-lab/control/command';
-  const ACK_FILTER='tokamak-lab/control/ack/+';
-  const DEVICE_IDS=['round_lights','fog_light','middle_fan','main_light','two_fans'];
-  let client=null;
-  const states=Object.fromEntries(DEVICE_IDS.map(id=>[id,null]));
-  const pending=new Map();
-  const $=id=>document.getElementById(id);
+  const BROKER_URL = 'wss://broker.mqtty.com:8884/mqtt';
+  const TELEMETRY_TOPICS = [
+    'tokamak-lab/demo/bridge/status',
+    'tokamak-lab/demo/esp01/status',
+    'tokamak-lab/demo/devices/round_lights/state',
+    'tokamak-lab/demo/devices/fog_light/state',
+    'tokamak-lab/demo/devices/middle_fan/state',
+    'tokamak-lab/demo/devices/main_light/state',
+    'tokamak-lab/demo/devices/two_fans/state'
+  ];
+  const COMMAND_TOPIC = 'tokamak-lab/control/command';
+  const ACK_FILTER = 'tokamak-lab/control/ack/+';
+  const DEVICE_IDS = ['round_lights','fog_light','middle_fan','main_light','two_fans'];
+  let client = null;
+  let subscriptionsReady = false;
+  const states = Object.fromEntries(DEVICE_IDS.map(id => [id, null]));
+  const pending = new Map();
+  const $ = id => document.getElementById(id);
 
-  function addActivity(message,kind=''){
-    const list=$('activityList');
-    const item=document.createElement('div');item.className='activity';
-    const mark=document.createElement('span');mark.className='activity-mark';mark.style.background=kind==='err'?'#c65b5b':kind==='warn'?'#c18a3d':'#8bb99a';
-    const text=document.createElement('span');text.textContent=message;
-    const time=document.createElement('time');time.textContent=new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-    item.append(mark,text,time);list.prepend(item);
-    while(list.children.length>10)list.removeChild(list.lastChild);
+  function addActivity(message, kind = '') {
+    const list = $('activityList');
+    const item = document.createElement('div');
+    item.className = 'activity';
+    const mark = document.createElement('span');
+    mark.className = 'activity-mark';
+    mark.style.background = kind === 'err' ? '#c65b5b' : kind === 'warn' ? '#c18a3d' : '#8bb99a';
+    const text = document.createElement('span');
+    text.textContent = message;
+    const time = document.createElement('time');
+    time.textContent = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+    item.append(mark, text, time);
+    list.prepend(item);
+    while (list.children.length > 12) list.removeChild(list.lastChild);
   }
-  function setNotice(message,kind=''){const n=$('notice');n.textContent=message;n.className=`notice ${kind}`.trim();}
-  function setConnection(connected,label){
-    $('topDot').className=`dot ${connected?'ok':''}`;$('sideDot').className=`dot ${connected?'ok':''}`;
-    $('topConnection').textContent=`MQTTY ${label}`;$('sideStatus').textContent=connected?'Connected to cloud broker':'Not connected';
-    $('brokerMetric').textContent=connected?'Connected':'Offline';$('brokerStatus').textContent=connected?'Connected · WSS':'Disconnected';
-    $('connectBtn').disabled=connected;$('disconnectBtn').disabled=!connected;
+
+  function setNotice(message, kind = '') {
+    $('notice').textContent = message;
+    $('notice').className = `notice ${kind}`.trim();
+  }
+
+  function setConnection(connected, label) {
+    $('topDot').className = `dot ${connected ? 'ok' : ''}`;
+    $('sideDot').className = `dot ${connected ? 'ok' : ''}`;
+    $('topConnection').textContent = `MQTTY ${label}`;
+    $('sideStatus').textContent = connected ? 'Connected to cloud broker' : 'Not connected';
+    $('brokerMetric').textContent = connected ? 'Connected' : 'Offline';
+    $('brokerStatus').textContent = connected ? 'Connected · WSS' : 'Disconnected';
+    $('connectBtn').disabled = connected;
+    $('disconnectBtn').disabled = !connected;
     DEVICE_IDS.forEach(renderDevice);
   }
-  function renderDevice(id){
-    const state=states[id],card=document.querySelector(`[data-device="${id}"]`);if(!card)return;
-    const badge=$(`state-${id}`),actual=$(`actual-${id}`),button=card.querySelector('.toggle');
-    const isPending=[...pending.values()].some(p=>p.device===id);
-    badge.textContent=isPending?'PENDING':(state||'UNKNOWN');badge.className=`state ${isPending?'pending':state==='ON'?'on':''}`;
-    actual.textContent=isPending?'Waiting for ESP confirmation':state?`Actual state · ${state}`:'Waiting for state';
-    button.textContent=isPending?'Sending…':state==='ON'?'Turn OFF':'Turn ON';
-    button.disabled=!client||!client.connected||!state||isPending;
+
+  function renderDevice(id) {
+    const state = states[id];
+    const card = document.querySelector(`[data-device="${id}"]`);
+    if (!card) return;
+    const badge = $(`state-${id}`);
+    const actual = $(`actual-${id}`);
+    const button = card.querySelector('.toggle');
+    const isPending = [...pending.values()].some(item => item.device === id);
+    badge.textContent = isPending ? 'PENDING' : (state || 'UNKNOWN');
+    badge.className = `state ${isPending ? 'pending' : state === 'ON' ? 'on' : ''}`;
+    actual.textContent = isPending ? 'Waiting for ESP confirmation' : state ? `Actual state · ${state}` : 'Waiting for state';
+    button.textContent = isPending ? 'Sending…' : state === 'ON' ? 'Turn OFF' : 'Turn ON';
+    button.disabled = !client || !client.connected || !subscriptionsReady || !state || isPending;
   }
-  function updateEspStatus(status){
-    const online=status==='online';$('espMetric').textContent=status.toUpperCase();$('espStatusDetail').textContent=status.toUpperCase();
-    $('espStatusDetail').style.color=online?'#3e8055':status==='offline'?'#b94a4a':'#38423b';
+
+  function updateEspStatus(status) {
+    const normalized = String(status || 'unknown').toLowerCase();
+    $('espMetric').textContent = normalized.toUpperCase();
+    $('espStatusDetail').textContent = normalized.toUpperCase();
+    $('espStatusDetail').style.color = normalized === 'online' ? '#3e8055' : normalized === 'offline' ? '#b94a4a' : '#38423b';
   }
-  function parseJson(payload){try{return JSON.parse(payload.toString());}catch{return null;}}
-  function handleMessage(topic,payload){
-    const value=payload.toString().trim();
-    if(topic.startsWith('tokamak-lab/control/ack/')){
-      const ack=parseJson(payload);if(!ack||!ack.request_id)return;
-      const pendingItem=pending.get(ack.request_id);const device=ack.device||(pendingItem&&pendingItem.device);
-      if(ack.status==='confirmed'&&device&&['ON','OFF'].includes(String(ack.actual_state).toUpperCase())){
-        states[device]=String(ack.actual_state).toUpperCase();setNotice(`${device.replaceAll('_',' ')} confirmed ${ack.actual_state}.`,'good');addActivity(`${device.replaceAll('_',' ')} confirmed ${ack.actual_state}`,'good');
-      }else if(ack.status==='sent_unconfirmed'){
-        setNotice(`Command reached the local broker, but ${device||'device'} state was not confirmed.`,'warn');addActivity(`Unconfirmed command for ${device||'device'}`,'warn');
-      }else if(ack.status){
-        const msg=`Command ${ack.status}: ${ack.detail||'No additional details'}`;setNotice(msg,ack.status==='failed'||ack.status==='rejected'?'err':'warn');addActivity(msg,ack.status==='failed'||ack.status==='rejected'?'err':'warn');
+
+  function parseJson(payload) {
+    try { return JSON.parse(payload.toString()); } catch { return null; }
+  }
+
+  function handleMessage(topic, payload) {
+    const value = payload.toString().trim();
+    if (topic.startsWith('tokamak-lab/control/ack/')) {
+      const ack = parseJson(payload);
+      if (!ack || !ack.request_id) return;
+      const pendingItem = pending.get(ack.request_id);
+      const device = ack.device || (pendingItem && pendingItem.device);
+      if (ack.status === 'confirmed' && device && ['ON','OFF'].includes(String(ack.actual_state).toUpperCase())) {
+        states[device] = String(ack.actual_state).toUpperCase();
+        setNotice(`${device.replaceAll('_',' ')} confirmed ${ack.actual_state}.`, 'good');
+        addActivity(`${device.replaceAll('_',' ')} confirmed ${ack.actual_state}`);
+      } else if (ack.status === 'sent_unconfirmed') {
+        setNotice(`Command reached local broker, but ${device || 'device'} state was not confirmed.`, 'warn');
+        addActivity(`Unconfirmed command for ${device || 'device'}`, 'warn');
+      } else if (ack.status) {
+        const message = `Command ${ack.status}: ${ack.detail || 'No additional details'}`;
+        setNotice(message, ack.status === 'failed' || ack.status === 'rejected' ? 'err' : 'warn');
+        addActivity(message, ack.status === 'failed' || ack.status === 'rejected' ? 'err' : 'warn');
       }
-      if(pendingItem){clearTimeout(pendingItem.timeout);pending.delete(ack.request_id);}
-      if(device&&DEVICE_IDS.includes(device))renderDevice(device);
+      if (pendingItem) { clearTimeout(pendingItem.timeout); pending.delete(ack.request_id); }
+      if (device && DEVICE_IDS.includes(device)) renderDevice(device);
       return;
     }
-    if(topic==='tokamak-lab/demo/esp01/status'){updateEspStatus(value.toLowerCase());return;}
-    if(topic==='tokamak-lab/demo/bridge/status'){$('bridgeStatus').textContent=value.toUpperCase();return;}
-    const match=topic.match(/^tokamak-lab\/demo\/devices\/([a-z0-9_]+)\/state$/);
-    if(match&&DEVICE_IDS.includes(match[1])&&(value==='ON'||value==='OFF')){states[match[1]]=value;renderDevice(match[1]);$('deviceCount').textContent=`${Object.values(states).filter(Boolean).length} / 5 REPORTING`;}
+
+    if (topic === 'tokamak-lab/demo/esp01/status') { updateEspStatus(value); return; }
+    if (topic === 'tokamak-lab/demo/bridge/status') { $('bridgeStatus').textContent = value.toUpperCase(); return; }
+
+    const match = topic.match(/^tokamak-lab\/demo\/devices\/([a-z0-9_]+)\/state$/);
+    if (match && DEVICE_IDS.includes(match[1]) && ['ON','OFF'].includes(value)) {
+      const device = match[1];
+      states[device] = value;
+      for (const [requestId, item] of pending) {
+        if (item.device === device && item.desiredState === value) {
+          clearTimeout(item.timeout);
+          pending.delete(requestId);
+          setNotice(`${device.replaceAll('_',' ')} confirmed ${value} by ESP8266 state feedback.`, 'good');
+          addActivity(`${device.replaceAll('_',' ')} confirmed ${value} by telemetry`);
+        }
+      }
+      renderDevice(device);
+      $('deviceCount').textContent = `${DEVICE_IDS.filter(id => Boolean(states[id])).length} / 5 REPORTING`;
+    }
   }
-  function connect(){
-    if(!window.mqtt){setNotice('MQTT client library did not load. Check internet access and reload.','err');return;}
-    if(client){try{client.end(true);}catch{}client=null;}
-    const username=$('username').value.trim(),password=$('password').value;
-    if(!username||!password){setNotice('Enter your generated MQTTY username and password.','warn');return;}
-    setConnection(false,'CONNECTING');setNotice('Connecting securely to MQTTY…');
-    client=mqtt.connect(BROKER_URL,{username,password,protocolVersion:4,clean:true,clientId:`tokamak-web-${crypto.randomUUID().replaceAll('-','').slice(0,18)}`,connectTimeout:12000,reconnectPeriod:3000,keepalive:30});
-    client.on('connect',()=>{
-      setConnection(true,'CONNECTED');setNotice('Connected. Loading live device states…');addActivity('Connected to MQTTY over secure WebSockets');
-      client.subscribe([{topic:TELEMETRY_FILTER,qos:1},{topic:ACK_FILTER,qos:1}],err=>{if(err){setNotice(`Subscription failed: ${err.message}`,'err');addActivity(`MQTTY subscription failed: ${err.message}`,'err');}else{setNotice('Connected to MQTTY. Listening for device telemetry and command acknowledgements.','good');}});
-    });
-    client.on('message',(topic,payload)=>handleMessage(topic,payload));
-    client.on('reconnect',()=>{setConnection(false,'RECONNECTING');setNotice('Reconnecting to MQTTY…','warn');});
-    client.on('close',()=>{setConnection(false,'DISCONNECTED');});
-    client.on('offline',()=>{setConnection(false,'OFFLINE');setNotice('MQTTY connection offline.','warn');});
-    client.on('error',err=>{setConnection(false,'ERROR');setNotice(`MQTTY connection error: ${err.message}`,'err');addActivity(`MQTTY connection error: ${err.message}`,'err');});
-  }
-  function disconnect(){
-    if(client){client.end(true);client=null;}$('password').value='';
-    for(const [id,item] of pending){clearTimeout(item.timeout);pending.delete(id);}
-    DEVICE_IDS.forEach(id=>{states[id]=null;renderDevice(id);});$('deviceCount').textContent='0 / 5 REPORTING';
-    setConnection(false,'DISCONNECTED');setNotice('Disconnected. Credentials cleared from this page.');$('bridgeStatus').textContent='Unknown';updateEspStatus('unknown');addActivity('Disconnected from MQTTY','warn');
-  }
-  function sendCommand(device,desiredState){
-    if(!client||!client.connected){setNotice('Connect to MQTTY first.','warn');return;}
-    const requestId=`web-${crypto.randomUUID()}`;
-    const command={request_id:requestId,device,state:desiredState,issued_at:Math.floor(Date.now()/1000)};
-    const timeout=setTimeout(()=>{const item=pending.get(requestId);if(item){pending.delete(requestId);renderDevice(device);setNotice(`No acknowledgement received for ${device.replaceAll('_',' ')}. Check the bridge connection.`,'warn');addActivity(`No ACK received for ${device.replaceAll('_',' ')}`,'warn');}},15000);
-    pending.set(requestId,{device,desiredState,timeout});renderDevice(device);
-    setNotice(`Sending ${desiredState} to ${device.replaceAll('_',' ')}…`);addActivity(`Requested ${desiredState} · ${device.replaceAll('_',' ')}`);
-    client.publish(COMMAND_TOPIC,JSON.stringify(command),{qos:1,retain:false},err=>{
-      if(err){clearTimeout(timeout);pending.delete(requestId);renderDevice(device);setNotice(`Publish failed: ${err.message}`,'err');addActivity(`Publish failed for ${device}`,'err');}
-      else{setNotice('Command published. Waiting for actual ESP8266 state confirmation…','warn');}
+
+  function subscribeOne(topic) {
+    return new Promise(resolve => {
+      client.subscribe(topic, {qos:1}, (err, granted) => {
+        const grant = Array.isArray(granted) ? granted[0] : null;
+        if (err) return resolve({topic, ok:false, reason:err.message || String(err)});
+        if (!grant) return resolve({topic, ok:false, reason:'No SUBACK response from broker'});
+        if (Number(grant.qos) === 128) return resolve({topic, ok:false, reason:'Broker rejected subscription (not authorized / topic ACL)'});
+        resolve({topic, ok:true, qos:grant.qos});
+      });
     });
   }
-  function showView(name){
-    document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id===`view-${name}`));
-    document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===name));
-    $('crumbCurrent').textContent=name==='iot'?'IoT Control':'TOKO AI';window.scrollTo({top:0,behavior:'smooth'});
+
+  async function verifySubscriptions() {
+    subscriptionsReady = false;
+    DEVICE_IDS.forEach(renderDevice);
+    const topics = [...TELEMETRY_TOPICS, ACK_FILTER];
+    const results = await Promise.all(topics.map(subscribeOne));
+    if (!client || !client.connected) return;
+    const telemetryFailures = results.filter(result => !result.ok && result.topic !== ACK_FILTER);
+    const ackFailure = results.find(result => !result.ok && result.topic === ACK_FILTER);
+    results.forEach(result => addActivity(result.ok ? `Subscription granted: ${result.topic}` : `Subscription rejected: ${result.topic} · ${result.reason}`, result.ok ? '' : 'err'));
+
+    if (telemetryFailures.length) {
+      $('brokerStatus').textContent = 'Connected · telemetry denied';
+      const first = telemetryFailures[0];
+      setNotice(`MQTTY is connected, but telemetry subscription failed for ${first.topic}: ${first.reason}`, 'err');
+      addActivity('Check that the MQTTY credential allows read/subscribe on tokamak-lab/demo/#', 'warn');
+      subscriptionsReady = false;
+    } else {
+      subscriptionsReady = true;
+      $('brokerStatus').textContent = ackFailure ? 'Connected · telemetry OK, ACK denied' : 'Connected · subscriptions granted';
+      setNotice(ackFailure ? 'Device telemetry is ready. ACK subscription denied; ESP state feedback will confirm commands.' : 'MQTTY connected. Telemetry and ACK subscriptions granted; loading retained device states.', ackFailure ? 'warn' : 'good');
+    }
+    DEVICE_IDS.forEach(renderDevice);
   }
-  document.querySelectorAll('[data-view]').forEach(btn=>btn.addEventListener('click',()=>showView(btn.dataset.view)));
-  $('connectBtn').addEventListener('click',connect);$('disconnectBtn').addEventListener('click',disconnect);
-  $('password').addEventListener('keydown',e=>{if(e.key==='Enter')connect();});
-  $('scrollConnect').addEventListener('click',()=>{showView('iot');$('connectPanel').scrollIntoView({behavior:'smooth',block:'center'});$('username').focus();});
-  document.querySelectorAll('.device').forEach(card=>card.querySelector('.toggle').addEventListener('click',()=>{const id=card.dataset.device;if(states[id])sendCommand(id,states[id]==='ON'?'OFF':'ON');}));
-  DEVICE_IDS.forEach(renderDevice);setConnection(false,'DISCONNECTED');updateEspStatus('unknown');
+
+  function connect() {
+    if (!window.mqtt) { setNotice('MQTT.js did not load. Check internet access and reload.', 'err'); return; }
+    if (client) { try { client.end(true); } catch {} client = null; }
+    const username = $('username').value.trim();
+    const password = $('password').value;
+    if (!username || !password) { setNotice('Enter the generated MQTTY username and password.', 'warn'); return; }
+
+    subscriptionsReady = false;
+    setConnection(false, 'CONNECTING');
+    setNotice('Connecting securely to MQTTY…');
+    const randomId = (window.crypto && crypto.randomUUID) ? crypto.randomUUID().replaceAll('-','').slice(0,18) : Math.random().toString(16).slice(2,20);
+    client = mqtt.connect(BROKER_URL, {
+      username, password, protocolVersion:4, clean:true,
+      clientId:`tokamak-web-${randomId}`, connectTimeout:12000,
+      reconnectPeriod:3000, keepalive:30
+    });
+
+    client.on('message', (topic, payload) => handleMessage(topic, payload));
+    client.on('connect', () => {
+      setConnection(true, 'CONNECTED');
+      DEVICE_IDS.forEach(id => { states[id] = null; renderDevice(id); });
+      $('deviceCount').textContent = '0 / 5 REPORTING';
+      updateEspStatus('unknown');
+      $('bridgeStatus').textContent = 'Waiting for telemetry';
+      setNotice('MQTTY transport connected. Checking topic permissions…', 'warn');
+      addActivity('Connected to MQTTY over secure WebSockets');
+      verifySubscriptions();
+    });
+    client.on('reconnect', () => { subscriptionsReady = false; setConnection(false, 'RECONNECTING'); setNotice('Reconnecting to MQTTY…', 'warn'); });
+    client.on('close', () => { subscriptionsReady = false; setConnection(false, 'DISCONNECTED'); });
+    client.on('offline', () => { subscriptionsReady = false; setConnection(false, 'OFFLINE'); setNotice('MQTTY connection offline.', 'warn'); });
+    client.on('error', err => { subscriptionsReady = false; setConnection(false, 'ERROR'); setNotice(`MQTTY connection error: ${err.message}`, 'err'); addActivity(`MQTTY error: ${err.message}`, 'err'); });
+  }
+
+  function disconnect() {
+    if (client) { client.end(true); client = null; }
+    $('password').value = '';
+    subscriptionsReady = false;
+    for (const [requestId, item] of pending) { clearTimeout(item.timeout); pending.delete(requestId); }
+    DEVICE_IDS.forEach(id => { states[id] = null; renderDevice(id); });
+    $('deviceCount').textContent = '0 / 5 REPORTING';
+    setConnection(false, 'DISCONNECTED');
+    setNotice('Disconnected. Credentials cleared from this page.');
+    $('bridgeStatus').textContent = 'Unknown';
+    updateEspStatus('unknown');
+    addActivity('Disconnected from MQTTY', 'warn');
+  }
+
+  function sendCommand(device, desiredState) {
+    if (!client || !client.connected || !subscriptionsReady) { setNotice('MQTTY connection or telemetry subscriptions are not ready.', 'warn'); return; }
+    const requestId = `web-${(window.crypto && crypto.randomUUID) ? crypto.randomUUID() : Date.now()}`;
+    const command = {request_id:requestId, device, state:desiredState, issued_at:Math.floor(Date.now()/1000)};
+    const timeout = setTimeout(() => {
+      const item = pending.get(requestId);
+      if (item) { pending.delete(requestId); renderDevice(device); setNotice(`No acknowledgement for ${device.replaceAll('_',' ')}. Check bridge and ACK/telemetry topics.`, 'warn'); addActivity(`No ACK received for ${device}`, 'warn'); }
+    }, 20000);
+    pending.set(requestId, {device, desiredState, timeout});
+    renderDevice(device);
+    setNotice(`Sending ${desiredState} to ${device.replaceAll('_',' ')}…`);
+    addActivity(`Requested ${desiredState} · ${device.replaceAll('_',' ')}`);
+    client.publish(COMMAND_TOPIC, JSON.stringify(command), {qos:1, retain:false}, err => {
+      if (err) { clearTimeout(timeout); pending.delete(requestId); renderDevice(device); setNotice(`Publish failed: ${err.message}`, 'err'); addActivity(`Publish failed for ${device}`, 'err'); }
+      else { setNotice('Command published. Waiting for actual ESP8266 state confirmation…', 'warn'); }
+    });
+  }
+
+  function showView(name) {
+    document.querySelectorAll('.view').forEach(view => view.classList.toggle('active', view.id === `view-${name}`));
+    document.querySelectorAll('[data-view]').forEach(button => button.classList.toggle('active', button.dataset.view === name));
+    $('crumbCurrent').textContent = name === 'iot' ? 'IoT Control' : 'TOKO AI';
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+
+  document.querySelectorAll('[data-view]').forEach(button => button.addEventListener('click', () => showView(button.dataset.view)));
+  $('connectBtn').addEventListener('click', connect);
+  $('disconnectBtn').addEventListener('click', disconnect);
+  $('password').addEventListener('keydown', event => { if (event.key === 'Enter') connect(); });
+  $('scrollConnect').addEventListener('click', () => { showView('iot'); $('connectPanel').scrollIntoView({behavior:'smooth', block:'center'}); $('username').focus(); });
+  document.querySelectorAll('.device').forEach(card => card.querySelector('.toggle').addEventListener('click', () => {
+    const id = card.dataset.device;
+    if (states[id]) sendCommand(id, states[id] === 'ON' ? 'OFF' : 'ON');
+  }));
+  DEVICE_IDS.forEach(renderDevice);
+  setConnection(false, 'DISCONNECTED');
+  updateEspStatus('unknown');
 })();
 </script>
 </body>
